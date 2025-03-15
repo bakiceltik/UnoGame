@@ -28,7 +28,7 @@ public class DuoCardGameMain {
      * @param args Komut satırı argümanları
      */
     public static void main(String[] args) {
-        printHeader("Duo Card Game Başlatılıyor");
+        printHeader("Starting Duo Card Game");
         
         // CSV dosya yolunu belirle ve dizin yapısını kontrol et
         String csvFilePath = createDataDirectory();
