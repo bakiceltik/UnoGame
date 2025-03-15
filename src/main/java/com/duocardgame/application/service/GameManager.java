@@ -18,6 +18,7 @@ import java.util.Optional;
 public class GameManager {
     private final GameMediator gameMediator;
     private String gameStatusMessage;
+    private final GameRepository gameRepository;
     
     /**
      * CSV dosya yolu ile bir GameManager oluşturur.
@@ -25,8 +26,8 @@ public class GameManager {
      * @param csvFilePath CSV dosyasının yolu
      */
     public GameManager(String csvFilePath) {
-        GameRepository repository = new CSVGameRepository(csvFilePath);
-        this.gameMediator = new DuoGameMediator(repository);
+        this.gameRepository = new CSVGameRepository(csvFilePath);
+        this.gameMediator = new DuoGameMediator(gameRepository);
         this.gameStatusMessage = "Oyun devam ediyor...";
     }
     
@@ -230,5 +231,32 @@ public class GameManager {
      */
     public boolean isRoundOver() {
         return gameMediator.isRoundOver();
+    }
+
+    /**
+     * Destede kalan kart sayısını döndürür.
+     * 
+     * @return Destede kalan kart sayısı
+     */
+    public int getRemainingCardCount() {
+        return gameMediator.getRemainingCardCount();
+    }
+
+    /**
+     * Çöp destesindeki kart sayısını döndürür.
+     * 
+     * @return Çöp destesindeki kart sayısı
+     */
+    public int getDiscardPileCount() {
+        return gameMediator.getDiscardPileCount();
+    }
+
+    /**
+     * Geçmiş oyun durumlarını CSV dosyasından okur
+     * 
+     * @return Geçmiş oyun durumları
+     */
+    public List<String[]> getGameHistory() {
+        return gameRepository.readAllGameStates();
     }
 } 

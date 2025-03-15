@@ -22,44 +22,73 @@ public class CSVGameRepository implements GameRepository {
         initializeFile();
     }
     
+    /**
+     * CSV dosyasını başlat ve kontrol et.
+     */
     private void initializeFile() {
         File file = new File(csvFilePath);
-        if (!file.exists()) {
-            try {
-                // Dizin yapısını oluştur
-                Path parentDir = Paths.get(file.getParent());
-                if (parentDir != null && !Files.exists(parentDir)) {
-                    Files.createDirectories(parentDir);
-                }
-                
-                // Dosyayı oluştur
+        try {
+            // Eğer dosya yoksa, dizin yapısını oluştur
+            if (!file.exists()) {
+                Path parentPath = file.getParentFile().toPath();
+                Files.createDirectories(parentPath);
                 file.createNewFile();
-            } catch (IOException e) {
-                System.err.println("CSV dosyası oluşturulamadı: " + e.getMessage());
+                System.out.println("CSV dosyası oluşturuldu: " + file.getAbsolutePath());
+            } else {
+                System.out.println("CSV dosyası zaten var: " + file.getAbsolutePath());
             }
+        } catch (IOException e) {
+            System.err.println("CSV dosyası oluşturma hatası: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
     @Override
     public void saveGameState(List<String[]> gameState) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath, true))) {
-            // Mevcut içeriği kontrol et
-            boolean fileExists = new File(csvFilePath).exists();
-            
-            // Eğer dosya boşsa veya yeniyse başlık satırını ekle
-            if (!fileExists || getRoundCount() == 0) {
-                String[] header = gameState.get(0);
-                writer.write(String.join(delimiter, header));
-                writer.newLine();
+        File file = new File(csvFilePath);
+        boolean isNewFile = !file.exists() || file.length() == 0;
+        
+        try {
+            // Dosya yoksa oluştur
+            if (!file.exists()) {
+                file.createNewFile();
+                System.out.println("Yeni CSV dosyası oluşturuldu: " + file.getAbsolutePath());
             }
             
-            // Veri satırını ekle
+            // Başlık ve veri
+            String[] header = gameState.get(0);
             String[] data = gameState.get(1);
-            writer.write(String.join(delimiter, data));
-            writer.newLine();
-            writer.flush();
+            
+            // Eğer dosya yeni ise veya boş ise, başlık satırını ekle
+            if (isNewFile) {
+                try (FileWriter fw = new FileWriter(file);
+                     BufferedWriter bw = new BufferedWriter(fw)) {
+                    // Başlık satırı yaz
+                    bw.write(String.join(delimiter, header));
+                    bw.newLine();
+                    
+                    // Veri satırı yaz
+                    bw.write(String.join(delimiter, data));
+                    bw.newLine();
+                    
+                    System.out.println("Başlık ve ilk veri satırı yazıldı: " + csvFilePath);
+                }
+            } else {
+                // Dosya zaten var ve dolu, sadece yeni veri satırını ekle
+                try (FileWriter fw = new FileWriter(file, true);
+                     BufferedWriter bw = new BufferedWriter(fw)) {
+                    bw.write(String.join(delimiter, data));
+                    bw.newLine();
+                    
+                    System.out.println("Yeni veri satırı eklendi: " + csvFilePath);
+                }
+            }
+            
+            System.out.println("Game state saved successfully!");
+            
         } catch (IOException e) {
             System.err.println("CSV dosyasına yazma hatası: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -81,17 +110,35 @@ public class CSVGameRepository implements GameRepository {
         return lineCount;
     }
     
+    @Override
     public List<String[]> readAllGameStates() {
         List<String[]> allGameStates = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(csvFilePath))) {
+        File file = new File(csvFilePath);
+        
+        if (!file.exists()) {
+            System.out.println("CSV dosyası bulunamadı: " + csvFilePath);
+            return allGameStates;
+        }
+        
+        if (file.length() == 0) {
+            System.out.println("CSV dosyası boş: " + csvFilePath);
+            return allGameStates;
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+            
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(delimiter);
                 allGameStates.add(fields);
             }
+            
+            System.out.println("CSV dosyasından " + allGameStates.size() + " satır okundu.");
         } catch (IOException e) {
             System.err.println("CSV dosyası okuma hatası: " + e.getMessage());
+            e.printStackTrace();
         }
+        
         return allGameStates;
     }
 } 

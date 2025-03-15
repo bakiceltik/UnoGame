@@ -198,6 +198,13 @@ public class DuoGameMediator implements GameMediator {
         discardPile.add(card);
         currentColor = card.getColor() != Color.WILD ? card.getColor() : currentColor;
         
+        // İyileştirilmiş oyun bilgilendirmesi
+        System.out.println("\n█ Kart Oynandı █");
+        System.out.println("» " + player.getName() + " şu kartı oynadı: " + card);
+        System.out.println("» Çöp destesindeki kart sayısı: " + discardPile.size());
+        System.out.println("» Yeni aktif renk: " + currentColor);
+        System.out.println("» " + player.getName() + " kalan kart sayısı: " + player.getHand().size());
+        
         // Kart etkisini uygula
         applyCardEffect(player, card);
         
@@ -221,6 +228,11 @@ public class DuoGameMediator implements GameMediator {
         if (isInitialDraw || getCurrentPlayer() == player) {
             Optional<Card> drawnCard = drawPile.drawCard();
             
+            // Daha detaylı log ekleyelim
+            System.out.println("\n█ Desteden kart çekiliyor... █");
+            System.out.println("» Kart çekilmeden önce deste boyutu: " + (drawPile.size() + 1));
+            System.out.println("» Kart çekildikten sonra deste boyutu: " + drawPile.size());
+            
             // Çekme destesi boş ise, çöp destesini karıştırıp yeni çekme destesi yap
             if (!drawnCard.isPresent() && !discardPile.isEmpty()) {
                 Card topCard = discardPile.remove(discardPile.size() - 1);
@@ -229,13 +241,20 @@ public class DuoGameMediator implements GameMediator {
                 discardPile.add(topCard);
                 drawPile.shuffle();
                 
+                System.out.println("\n█ ÖNEMLİ: Çöp destesi çekme destesine dönüştürüldü! █");
+                System.out.println("» Yeni deste boyutu: " + drawPile.size());
+                System.out.println("» Çöp destesi boyutu: " + discardPile.size());
+                
                 drawnCard = drawPile.drawCard();
+                System.out.println("» Kart çekildikten sonra yeni deste boyutu: " + drawPile.size());
             }
             
             if (drawnCard.isPresent()) {
                 // Eğer oyuncu null değilse (özel durum değilse) kart ekle
                 if (player != null) {
                     player.addCardToHand(drawnCard.get());
+                    System.out.println("\n" + player.getName() + " bir kart çekti: " + drawnCard.get());
+                    System.out.println("» " + player.getName() + " elindeki kart sayısı: " + player.getHand().size());
                 }
                 
                 // Eğer normal oyun akışındaysak ve çekilen kart oynanabilirse oynat
@@ -251,6 +270,7 @@ public class DuoGameMediator implements GameMediator {
                     if (playCard) {
                         // Önemli: playCard metodu içindeki sıra kontrolünü geçmek için burada sıranın 
                         // hala çeken oyuncuda olduğundan emin olalım
+                        System.out.println("\n" + player.getName() + " çektiği kartı oynuyor: " + drawnCard.get());
                         playCard(player, drawnCard.get());
                         return;
                     }
@@ -357,24 +377,35 @@ public class DuoGameMediator implements GameMediator {
     }
     
     private void endRound(Player winner) {
+        System.out.println("\n=========== ROUND SONU ===========");
+        
         // Kazanan oyuncuya, diğer oyuncuların ellerinde kalan kartların değerini ekle
         int roundPoints = 0;
         for (Player player : players) {
             if (player != winner) {
-                roundPoints += player.calculateHandValue();
+                int playerHandValue = player.calculateHandValue();
+                roundPoints += playerHandValue;
+                System.out.println(player.getName() + " elinde kalan kartların değeri: " + playerHandValue);
             }
         }
         
+        // Puanları ekle
         winner.addToScore(roundPoints);
         
+        System.out.println("\n*** " + winner.getName() + " turu kazandı ve " + roundPoints + " puan kazandı! ***\n");
+        System.out.println("Toplam puanı: " + winner.getTotalScore());
+        
         // Oyun durumunu kaydet
+        System.out.println("\nOyun durumu kaydediliyor...");
         saveGameState();
         
         // Kazanan oyuncu 500 puana ulaştıysa oyun biter
         if (winner.getTotalScore() >= WINNING_SCORE) {
             gameOver = true;
+            System.out.println(winner.getName() + " " + winner.getTotalScore() + " puan ile oyunu kazandı!");
         } else {
             // Değilse yeni bir tur başlat
+            System.out.println("Yeni tur başlatılıyor...\n");
             startNewRound();
         }
     }
@@ -456,5 +487,23 @@ public class DuoGameMediator implements GameMediator {
         gameState.add(data);
         
         gameRepository.saveGameState(gameState);
+        
+        // Konsola tur sonucunu yazdır
+        System.out.println("Round " + (gameRepository.getRoundCount()) + " sonuçları kaydedildi.");
+        System.out.println("Oyuncu Puanları:");
+        for (Player player : players) {
+            System.out.println(player.getName() + ": " + player.getTotalScore());
+        }
+        System.out.println();
+    }
+
+    @Override
+    public int getRemainingCardCount() {
+        return drawPile.size();
+    }
+
+    @Override
+    public int getDiscardPileCount() {
+        return discardPile.size();
     }
 } 

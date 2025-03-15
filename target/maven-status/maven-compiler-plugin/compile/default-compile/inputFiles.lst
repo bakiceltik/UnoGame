@@ -1,0 +1,16 @@
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/presentation/ui/ConsoleUI.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/application/service/GameManager.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/Deck.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/NumberCard.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/presentation/DuoCardGameMain.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/dataaccess/repository/CSVGameRepository.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/mediator/GameMediator.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/application/service/TurnManager.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/dataaccess/repository/GameRepository.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/application/service/GameService.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/Color.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/CardType.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/ActionCard.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/mediator/DuoGameMediator.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/Card.java
+/Users/yigit/GitHub/UnoGame/src/main/java/com/duocardgame/domain/model/Player.java

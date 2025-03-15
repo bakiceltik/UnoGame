@@ -63,32 +63,82 @@ public class ConsoleUI {
      * Oyun döngüsünü çalıştırır.
      */
     private void gameLoop() {
+        int roundNumber = 1;
+        
         while (!gameManager.isGameOver()) {
-            displayGameState();
+            System.out.println(ANSI_CYAN + ANSI_BOLD);
+            System.out.println("╔════════════════════════════════════════════════════╗");
+            System.out.println("║                 ROUND " + roundNumber + "                          ║");
+            System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
             
-            // Oyuncu sırası
-            Player currentPlayer = gameManager.getCurrentPlayer();
-            System.out.println(ANSI_BOLD + currentPlayer.getName() + " sırası" + ANSI_RESET);
+            // Her round başında skor durumunu göster
+            displayScores();
             
-            // Eğer kullanıcı girişi bekliyorsak:
-            waitForNextTurn();
+            boolean roundIsActive = true;
             
-            gameManager.playTurn();
-            
-            // Oyun durumunu tekrar göstermek için 1 saniye bekle
-            sleep(1000);
+            while (roundIsActive && !gameManager.isGameOver()) {
+                displayGameState();
+                
+                // Oyuncu sırası
+                Player currentPlayer = gameManager.getCurrentPlayer();
+                System.out.println(ANSI_BOLD + currentPlayer.getName() + " sırası" + ANSI_RESET);
+                
+                // Eğer kullanıcı girişi bekliyorsak:
+                waitForNextTurn();
+                
+                gameManager.playTurn();
+                
+                // Round bitip bitmediğini kontrol et
+                if (gameManager.isRoundOver()) {
+                    roundIsActive = false;
+                    displayRoundResults(roundNumber);
+                    roundNumber++;
+                }
+                
+                // Oyun durumunu tekrar göstermek için kısa bir bekle
+                sleep(1000);
+            }
         }
+    }
+    
+    /**
+     * Oyuncuların skorlarını gösterir.
+     */
+    private void displayScores() {
+        System.out.println(ANSI_GREEN + ANSI_BOLD);
+        System.out.println("╔════════════════════════════════════════════════════╗");
+        System.out.println("║               SKOR TABLOSU                         ║");
+        System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
+        
+        List<Player> players = gameManager.getPlayers();
+        
+        for (Player player : players) {
+            System.out.println(player.getName() + ": " + player.getTotalScore() + " puan");
+        }
+        
+        // Kart destelerinin durumunu göster
+        System.out.println("\nDestede kalan kart sayısı: " + ANSI_BOLD + gameManager.getRemainingCardCount() + ANSI_RESET);
+        System.out.println("Çöp destesindeki kart sayısı: " + ANSI_BOLD + gameManager.getDiscardPileCount() + ANSI_RESET);
+        
+        System.out.println(); // Boş satır
     }
     
     /**
      * Karşılama mesajını yazdırır.
      */
     private void printWelcomeMessage() {
-        clearScreen();
+        System.out.println("\n" + ANSI_CYAN + ANSI_BOLD);
+        System.out.println("======================================================");
+        System.out.println("                YENİ OYUN BAŞLIYOR                   ");
+        System.out.println("======================================================" + ANSI_RESET);
+        System.out.println();
+        
         System.out.println(ANSI_CYAN + ANSI_BOLD);
         System.out.println("╔════════════════════════════════════════════════════╗");
         System.out.println("║         DUO KART OYUNUNA HOŞGELDİNİZ               ║");
         System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
+        
+        // Geçmiş oyun kayıtlarını göstermeyi kaldırdık
         
         System.out.println(ANSI_YELLOW + "\nOyun Kuralları:" + ANSI_RESET);
         System.out.println(" - Amaç: Elinizdeki tüm kartları bitirmek");
@@ -113,7 +163,11 @@ public class ConsoleUI {
      * Oyun durumunu ekrana yazdırır.
      */
     private void displayGameState() {
-        clearScreen();
+        System.out.println("\n" + ANSI_CYAN + ANSI_BOLD);
+        System.out.println("======================================================");
+        System.out.println("                YENİ HAMLE BAŞLIYOR                  ");
+        System.out.println("======================================================" + ANSI_RESET);
+        System.out.println();
         
         // Üst kart bilgisini göster
         Card topCard = gameManager.getTopCard();
@@ -127,6 +181,10 @@ public class ConsoleUI {
         } else {
             System.out.println("Henüz kart açılmadı.");
         }
+        
+        // Deste ve çöp destesi durumunu göster
+        System.out.println("Destede kalan kart sayısı: " + ANSI_BOLD + gameManager.getRemainingCardCount() + ANSI_RESET);
+        System.out.println("Çöp destesindeki kart sayısı: " + ANSI_BOLD + gameManager.getDiscardPileCount() + ANSI_RESET);
         
         // Oyuncu bilgilerini göster
         System.out.println(ANSI_CYAN + ANSI_BOLD);
@@ -227,9 +285,7 @@ public class ConsoleUI {
      * Oyun sonuçlarını gösterir.
      */
     private void displayGameResults() {
-        clearScreen();
-        
-        System.out.println(ANSI_CYAN + ANSI_BOLD);
+        System.out.println("\n" + ANSI_CYAN + ANSI_BOLD);
         System.out.println("╔════════════════════════════════════════════════════╗");
         System.out.println("║             OYUN SONUÇLARI                         ║");
         System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
@@ -254,6 +310,7 @@ public class ConsoleUI {
         System.out.println("\nOyun İstatistikleri:");
         System.out.println("  Toplam Oyuncu Sayısı: " + players.size());
         System.out.println("  Kazanan Oyuncu: " + winner.getName());
+        System.out.println("  Toplam Round Sayısı: " + gameManager.getGameHistory().size());
     }
     
     /**
@@ -299,5 +356,52 @@ public class ConsoleUI {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+    
+    /**
+     * Round sonuçlarını gösterir.
+     * 
+     * @param roundNumber Round numarası
+     */
+    private void displayRoundResults(int roundNumber) {
+        // Round sonu ayracı
+        System.out.println("\n" + ANSI_YELLOW + ANSI_BOLD);
+        System.out.println("╔════════════════════════════════════════════════════╗");
+        System.out.println("║             ROUND " + roundNumber + " SONUÇLARI                   ║");
+        System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
+        
+        List<Player> players = gameManager.getPlayers();
+        
+        // Tur kazananını daha belirgin göster
+        Player roundWinner = null;
+        for (Player player : players) {
+            if (player.hasEmptyHand()) {
+                roundWinner = player;
+                break;
+            }
+        }
+        
+        if (roundWinner != null) {
+            System.out.println("\n" + ANSI_GREEN + ANSI_BOLD + "★★★ ROUND KAZANANI: " + roundWinner.getName() + " ★★★" + ANSI_RESET);
+        }
+        
+        System.out.println("\n" + ANSI_CYAN + "Skor Tablosu:" + ANSI_RESET);
+        for (Player player : players) {
+            String marker = (player == roundWinner) ? " ⭐" : "";
+            System.out.println(ANSI_BOLD + player.getName() + ANSI_RESET + ": " + 
+                              player.getTotalScore() + " puan" + marker);
+        }
+        
+        System.out.println("\n" + ANSI_YELLOW + ANSI_BOLD);
+        System.out.println("╔════════════════════════════════════════════════════╗");
+        System.out.println("║           DEVAM ETMEK İÇİN ENTER BASIN             ║");
+        System.out.println("╚════════════════════════════════════════════════════╝" + ANSI_RESET);
+        scanner.nextLine();
+        
+        // Round sonrasında özel bir ayraç ekleyelim
+        System.out.println("\n" + ANSI_PURPLE + ANSI_BOLD);
+        System.out.println("********************************************************");
+        System.out.println("*                    YENİ ROUND                        *");
+        System.out.println("********************************************************" + ANSI_RESET);
     }
 } 

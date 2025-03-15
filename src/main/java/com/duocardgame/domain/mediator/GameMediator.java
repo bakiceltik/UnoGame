@@ -21,4 +21,6 @@ public interface GameMediator {
     List<Player> getPlayers();
     Player getDealerPlayer();
     void saveGameState();
+    int getRemainingCardCount();
+    int getDiscardPileCount();
 } 
