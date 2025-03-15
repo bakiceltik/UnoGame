@@ -3,6 +3,7 @@ package com.duocardgame.application.service;
 import com.duocardgame.domain.mediator.GameMediator;
 import com.duocardgame.domain.mediator.DuoGameMediator;
 import com.duocardgame.domain.model.Card;
+import com.duocardgame.domain.model.CardType;
 import com.duocardgame.domain.model.Color;
 import com.duocardgame.domain.model.Player;
 import com.duocardgame.dataaccess.repository.GameRepository;
@@ -12,14 +13,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * GameManager, oyun akışını yöneten ve Domain Layer ile iletişim kuran sınıftır.
+ * GameManager, oyun akışını yöneten ve Domain Layer ile iletişim kuran
+ * sınıftır.
  * Application Layer'ın ana bileşenidir.
  */
 public class GameManager {
     private final GameMediator gameMediator;
     private String gameStatusMessage;
     private final GameRepository gameRepository;
-    
+
     /**
      * CSV dosya yolu ile bir GameManager oluşturur.
      * 
@@ -30,7 +32,7 @@ public class GameManager {
         this.gameMediator = new DuoGameMediator(gameRepository);
         this.gameStatusMessage = "Oyun devam ediyor...";
     }
-    
+
     /**
      * Oyunu başlatır.
      */
@@ -38,7 +40,7 @@ public class GameManager {
         gameMediator.startGame();
         updateGameStatus();
     }
-    
+
     /**
      * Oyun döngüsünü çalıştırır. Oyun bitene kadar döngüyü sürdürür.
      * 
@@ -49,10 +51,10 @@ public class GameManager {
             playTurn();
             updateGameStatus();
         }
-        
+
         return getWinner();
     }
-    
+
     /**
      * Oyun durumunu günceller
      */
@@ -65,26 +67,27 @@ public class GameManager {
             gameStatusMessage = "Oyun devam ediyor...";
         }
     }
-    
+
     /**
      * Mevcut oyuncunun turunu oynar.
      */
     public void playTurn() {
         Player currentPlayer = gameMediator.getCurrentPlayer();
         Card topCard = gameMediator.getTopCard();
-        
+        Color currentColor = gameMediator.getCurrentColor();
+
         // Eğer üst kart yoksa, hatalı durum kontrolü
         if (topCard == null) {
             throw new IllegalStateException("Üst kart bulunamadı");
         }
-        
+
         // Mevcut oyuncunun oynayabileceği kartları bul
-        List<Card> playableCards = currentPlayer.getPlayableCards(topCard);
-        
+        List<Card> playableCards = currentPlayer.getPlayableCards(topCard, currentColor);
+
         if (!playableCards.isEmpty()) {
             // Oynanabilir kart varsa, yapay zekaya kartı oynat
-            Optional<Card> aiDecision = currentPlayer.playCard(topCard);
-            
+            Optional<Card> aiDecision = currentPlayer.playCard(topCard, currentColor);
+
             if (aiDecision.isPresent()) {
                 gameMediator.playCard(currentPlayer, aiDecision.get());
             } else {
@@ -95,10 +98,10 @@ public class GameManager {
             // Eğer oynanabilir kart yoksa, desteden kart çek
             gameMediator.drawCard(currentPlayer);
         }
-        
+
         updateGameStatus();
     }
-    
+
     /**
      * Oyuncunun seçilen kartını oynar.
      * 
@@ -108,27 +111,30 @@ public class GameManager {
     public boolean playSelectedCard(int cardIndex) {
         Player currentPlayer = gameMediator.getCurrentPlayer();
         Card topCard = gameMediator.getTopCard();
-        
+        Color currentColor = gameMediator.getCurrentColor();
+
         // İndeks kontrolü
         if (cardIndex < 0 || cardIndex >= currentPlayer.getHandSize()) {
             return false;
         }
-        
+
         // Seçilen kartı al
         List<Card> hand = currentPlayer.getHand();
         Card selectedCard = hand.get(cardIndex);
-        
+
         // Kart oynanabilir mi kontrol et
-        if (!selectedCard.isPlayable(topCard)) {
+        if (!selectedCard.isPlayable(topCard) && selectedCard.getColor() != currentColor &&
+                !(selectedCard.getType() == CardType.WILD || selectedCard.getType() == CardType.WILD_DRAW_FOUR ||
+                        selectedCard.getType() == CardType.SHUFFLE_HANDS)) {
             return false;
         }
-        
+
         // Kartı oyna
         gameMediator.playCard(currentPlayer, selectedCard);
         updateGameStatus();
         return true;
     }
-    
+
     /**
      * Oyuncuya kart çektirir.
      * 
@@ -140,7 +146,7 @@ public class GameManager {
         updateGameStatus();
         return true;
     }
-    
+
     /**
      * Wild kartlardan sonra yeni renk seçer
      *
@@ -150,7 +156,7 @@ public class GameManager {
         gameMediator.changeColor(newColor);
         updateGameStatus();
     }
-    
+
     /**
      * Oyun durumunu döndürür.
      * 
@@ -159,7 +165,7 @@ public class GameManager {
     public String getGameStatus() {
         return gameStatusMessage;
     }
-    
+
     /**
      * Oyuncuların listesini döndürür.
      * 
@@ -168,7 +174,7 @@ public class GameManager {
     public List<Player> getPlayers() {
         return gameMediator.getPlayers();
     }
-    
+
     /**
      * Mevcut oyuncuyu döndürür.
      * 
@@ -177,7 +183,7 @@ public class GameManager {
     public Player getCurrentPlayer() {
         return gameMediator.getCurrentPlayer();
     }
-    
+
     /**
      * Dağıtıcı oyuncuyu döndürür.
      * 
@@ -186,7 +192,7 @@ public class GameManager {
     public Player getDealerPlayer() {
         return gameMediator.getDealerPlayer();
     }
-    
+
     /**
      * Üst kartı döndürür.
      * 
@@ -195,7 +201,7 @@ public class GameManager {
     public Card getTopCard() {
         return gameMediator.getTopCard();
     }
-    
+
     /**
      * Kazanan oyuncuyu bulur.
      * 
@@ -204,17 +210,17 @@ public class GameManager {
     private Player getWinner() {
         Player winner = null;
         int maxPoints = 0;
-        
+
         for (Player player : gameMediator.getPlayers()) {
             if (player.getTotalScore() > maxPoints) {
                 maxPoints = player.getTotalScore();
                 winner = player;
             }
         }
-        
+
         return winner;
     }
-    
+
     /**
      * Oyunun bitip bitmediğini kontrol eder.
      * 
@@ -223,7 +229,7 @@ public class GameManager {
     public boolean isGameOver() {
         return gameMediator.isGameOver();
     }
-    
+
     /**
      * Mevcut turun bitip bitmediğini kontrol eder.
      * 
@@ -259,4 +265,13 @@ public class GameManager {
     public List<String[]> getGameHistory() {
         return gameRepository.readAllGameStates();
     }
-} 
+
+    /**
+     * Mevcut aktif rengi döndürür.
+     * 
+     * @return Mevcut aktif renk
+     */
+    public Color getCurrentColor() {
+        return gameMediator.getCurrentColor();
+    }
+}
