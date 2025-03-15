@@ -135,7 +135,13 @@ public class DuoGameMediator implements GameMediator {
         switch (type) {
             case WILD:
                 // İlk oyuncu renk seçer
-                currentColor = players.get((dealerIndex + 1) % players.size()).chooseColor();
+                Color selectedColor = players.get((dealerIndex + 1) % players.size()).chooseColor();
+                currentColor = selectedColor;
+                System.out.println("\n█ Initial Color Selection █");
+                System.out
+                        .println("» First card is WILD! " + players.get((dealerIndex + 1) % players.size()).getName() +
+                                " selected " + selectedColor + " as the starting color!");
+                System.out.println("» All players must now play " + selectedColor + " cards or matching card types.");
                 break;
 
             case WILD_DRAW_FOUR:
@@ -174,7 +180,14 @@ public class DuoGameMediator implements GameMediator {
 
             case SHUFFLE_HANDS:
                 // İlk oyuncu renk seçer
-                currentColor = players.get((dealerIndex + 1) % players.size()).chooseColor();
+                Color selectedColorShuffle = players.get((dealerIndex + 1) % players.size()).chooseColor();
+                currentColor = selectedColorShuffle;
+                System.out.println("\n█ Initial Color Selection █");
+                System.out.println(
+                        "» First card is SHUFFLE_HANDS! " + players.get((dealerIndex + 1) % players.size()).getName() +
+                                " selected " + selectedColorShuffle + " as the starting color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorShuffle + " cards or matching card types.");
                 break;
 
             default:
@@ -207,18 +220,27 @@ public class DuoGameMediator implements GameMediator {
             // Eğer oyuncunun elinde eşleşen renkte kart varsa ve bu bir Wild Draw Four
             // kartıysa, oynanamaz
             if (hasMatchingColorCard && card.getType() == CardType.WILD_DRAW_FOUR) {
-                throw new IllegalArgumentException("Wild Draw Four card can only be played if there is no card of the matching color");
+                throw new IllegalArgumentException(
+                        "Wild Draw Four card can only be played if there is no card of the matching color");
             }
         }
 
         if (!card.isPlayable(topCard) && card.getColor() != currentColor &&
-                !(card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR || card.getType() == CardType.SHUFFLE_HANDS)) {
+                !(card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR
+                        || card.getType() == CardType.SHUFFLE_HANDS)) {
             throw new IllegalArgumentException("This card is not compatible");
         }
 
         player.removeCardFromHand(card);
         discardPile.add(card);
-        currentColor = card.getColor() != Color.WILD ? card.getColor() : currentColor;
+
+        // Normal kartlar için rengi güncelle (Wild kartlar için applyCardEffect içinde
+        // yapılıyor)
+        if (card.getColor() != Color.WILD) {
+            currentColor = card.getColor();
+            System.out.println("\n█ Color Update █");
+            System.out.println("» New active color is now: " + currentColor);
+        }
 
         // İyileştirilmiş oyun bilgilendirmesi
         System.out.println("\n█ Card Played █");
@@ -277,7 +299,8 @@ public class DuoGameMediator implements GameMediator {
                 if (player != null) {
                     player.addCardToHand(drawnCard.get());
                     System.out.println("\n" + player.getName() + " drew a card: " + drawnCard.get());
-                    System.out.println("» " + player.getName() + " the number of cards in your hand: " + player.getHand().size());
+                    System.out.println(
+                            "» " + player.getName() + " the number of cards in your hand: " + player.getHand().size());
                 }
 
                 // Eğer normal oyun akışındaysak ve çekilen kart oynanabilirse oynat
@@ -292,16 +315,19 @@ public class DuoGameMediator implements GameMediator {
                     if (drawnCardObj.isPlayable(topCard) || drawnCardObj.getColor() == currentColor) {
                         canPlayDrawnCard = true;
                     }
-                    // Wild kartı sadece eldeki kartlarda topCard'ın rengiyle eşleşen kart yoksa
+                    // Wild kartı sadece eldeki kartlarda topCard'ın rengiyle veya mevcut renkle
+                    // eşleşen kart yoksa
                     // oynanabilir
                     else if (drawnCardObj.getType() == CardType.WILD) {
                         // Oyuncunun elinde eşleşen renkte başka kart var mı kontrol et
                         boolean hasMatchingColorCard = false;
                         for (Card handCard : player.getHand()) {
                             // Wild kartları hariç tut, sadece normal renk kartlarını kontrol et
-                            if (handCard != drawnCardObj && handCard.getColor() == topCard.getColor() &&
-                                    handCard.getType() != CardType.WILD
-                                    && handCard.getType() != CardType.WILD_DRAW_FOUR) {
+                            if (handCard != drawnCardObj &&
+                                    (handCard.getColor() == topCard.getColor() || handCard.getColor() == currentColor)
+                                    &&
+                                    handCard.getType() != CardType.WILD &&
+                                    handCard.getType() != CardType.WILD_DRAW_FOUR) {
                                 hasMatchingColorCard = true;
                                 break;
                             }
@@ -318,9 +344,11 @@ public class DuoGameMediator implements GameMediator {
                         boolean hasMatchingColorCard = false;
                         for (Card handCard : player.getHand()) {
                             // Wild kartları hariç tut, sadece normal renk kartlarını kontrol et
-                            if (handCard != drawnCardObj && handCard.getColor() == topCard.getColor() &&
-                                    handCard.getType() != CardType.WILD
-                                    && handCard.getType() != CardType.WILD_DRAW_FOUR) {
+                            if (handCard != drawnCardObj &&
+                                    (handCard.getColor() == topCard.getColor() || handCard.getColor() == currentColor)
+                                    &&
+                                    handCard.getType() != CardType.WILD &&
+                                    handCard.getType() != CardType.WILD_DRAW_FOUR) {
                                 hasMatchingColorCard = true;
                                 break;
                             }
@@ -398,12 +426,21 @@ public class DuoGameMediator implements GameMediator {
                 break;
 
             case WILD:
-                changeColor(player.chooseColor());
+                Color selectedColor = player.chooseColor();
+                changeColor(selectedColor);
+                System.out.println("\n█ Color Selection █");
+                System.out.println("» " + player.getName() + " selected " + selectedColor + " as the new color!");
+                System.out.println("» All players must now play " + selectedColor + " cards or matching card types.");
                 break;
 
             case WILD_DRAW_FOUR:
                 nextPlayer = getNextPlayer();
-                changeColor(player.chooseColor());
+                Color selectedColorWild4 = player.chooseColor();
+                changeColor(selectedColorWild4);
+                System.out.println("\n█ Color Selection █");
+                System.out.println("» " + player.getName() + " selected " + selectedColorWild4 + " as the new color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorWild4 + " cards or matching card types.");
                 // Önce sırayı bir sonraki oyuncuya geçirelim
                 nextTurn();
                 // Şimdi kart çekme işlemini yapalım
@@ -420,7 +457,13 @@ public class DuoGameMediator implements GameMediator {
 
             case SHUFFLE_HANDS:
                 shuffleHands(player);
-                changeColor(player.chooseColor());
+                Color selectedColorShuffle = player.chooseColor();
+                changeColor(selectedColorShuffle);
+                System.out.println("\n█ Color Selection █");
+                System.out
+                        .println("» " + player.getName() + " selected " + selectedColorShuffle + " as the new color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorShuffle + " cards or matching card types.");
                 break;
 
             default:
@@ -579,5 +622,10 @@ public class DuoGameMediator implements GameMediator {
     @Override
     public int getDiscardPileCount() {
         return discardPile.size();
+    }
+
+    @Override
+    public Color getCurrentColor() {
+        return currentColor;
     }
 }

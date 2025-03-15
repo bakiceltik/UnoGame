@@ -59,27 +59,42 @@ public class Player {
     }
 
     // Oynanabilir kartları bul
-    public List<Card> getPlayableCards(Card topCard) {
+    public List<Card> getPlayableCards(Card topCard, Color currentColor) {
         List<Card> playableCards = new ArrayList<>();
 
         // Önce eldeki kartlarda topCard'ın rengiyle eşleşen kart var mı kontrol et
         boolean hasMatchingColorCard = hasMatchingColorCard(topCard.getColor());
+
         for (Card card : hand) {
+            // Kart doğrudan oynanabilir mi (aynı renk veya aynı tip/sayı)
             if (card.isPlayable(topCard) && card.getType() != CardType.WILD_DRAW_FOUR) {
                 playableCards.add(card);
-            } else if (card.getType() == CardType.WILD || card.getType() == CardType.SHUFFLE_HANDS) {
-                // Wild kartlar ve shuffle hands her zaman oynanabilir
+            }
+            // Eğer üstteki kart WILD ise ve kartın rengi mevcut renk ile eşleşiyorsa
+            else if (topCard.getColor() == Color.WILD && card.getColor() == currentColor) {
                 playableCards.add(card);
-            } else if (card.getType() == CardType.WILD_DRAW_FOUR) {
-                // Wild Draw Four kartı sadece eldeki kartlarda topCard'ın rengiyle eşleşen kart
-                // yoksa oynanabilir
-                if (!hasMatchingColorCard) {
+            }
+            // Wild kartlar ve shuffle hands her zaman oynanabilir
+            else if (card.getType() == CardType.WILD || card.getType() == CardType.SHUFFLE_HANDS) {
+                playableCards.add(card);
+            }
+            // Wild Draw Four kartı sadece eldeki kartlarda topCard'ın rengiyle veya mevcut
+            // renkle eşleşen kart yoksa oynanabilir
+            else if (card.getType() == CardType.WILD_DRAW_FOUR) {
+                if (!hasMatchingColorCard && !hasMatchingColorCard(currentColor)) {
                     playableCards.add(card);
                 }
             }
         }
         System.out.println("Oynanabilir kartlar: " + playableCards);
         return playableCards;
+    }
+
+    // Eski metodu koruyalım ama yeni metodu çağırsın
+    public List<Card> getPlayableCards(Card topCard) {
+        // Eğer üstteki kart WILD ise, mevcut renk topCard'ın renginden farklı olabilir
+        // Bu durumda varsayılan olarak topCard'ın rengini kullanıyoruz
+        return getPlayableCards(topCard, topCard.getColor());
     }
 
     // Eldeki kartlar arasında belirli bir renge sahip kart var mı kontrol et
@@ -95,8 +110,8 @@ public class Player {
     }
 
     // Rastgele bir kart oynama stratejisi
-    public Optional<Card> playCard(Card topCard) {
-        List<Card> playableCards = getPlayableCards(topCard);
+    public Optional<Card> playCard(Card topCard, Color currentColor) {
+        List<Card> playableCards = getPlayableCards(topCard, currentColor);
 
         if (playableCards.isEmpty()) {
             return Optional.empty();
@@ -108,12 +123,15 @@ public class Player {
         List<Card> sameColorCards = new ArrayList<>();
         List<Card> sameNumberOrTypeCards = new ArrayList<>();
         List<Card> wildCards = new ArrayList<>();
+        List<Card> currentColorCards = new ArrayList<>();
 
         for (Card card : playableCards) {
             if (card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR) {
                 wildCards.add(card);
             } else if (card.getColor() == topCard.getColor()) {
                 sameColorCards.add(card);
+            } else if (card.getColor() == currentColor) {
+                currentColorCards.add(card);
             } else if (topCard.getType() == CardType.NUMBER && card.getType() == CardType.NUMBER &&
                     ((NumberCard) card).getNumber() == ((NumberCard) topCard).getNumber()) {
                 sameNumberOrTypeCards.add(card);
@@ -128,6 +146,12 @@ public class Player {
         if (playColorCard && !sameColorCards.isEmpty()) {
             // En yüksek puanlı renk kartını seç
             selectedCard = Collections.max(sameColorCards,
+                    (c1, c2) -> Integer.compare(c1.getPointValue(), c2.getPointValue()));
+        }
+        // Mevcut renk kartlarını oynamayı tercih ediyorsa
+        else if (playColorCard && !currentColorCards.isEmpty()) {
+            // En yüksek puanlı mevcut renk kartını seç
+            selectedCard = Collections.max(currentColorCards,
                     (c1, c2) -> Integer.compare(c1.getPointValue(), c2.getPointValue()));
         }
         // Sayı/tip kartlarını oynamayı tercih ediyorsa ve aynı sayı/tipte kart varsa
@@ -145,6 +169,11 @@ public class Player {
 
         hand.remove(selectedCard);
         return Optional.of(selectedCard);
+    }
+
+    // Eski metodu koruyalım ama yeni metodu çağırsın
+    public Optional<Card> playCard(Card topCard) {
+        return playCard(topCard, topCard.getColor());
     }
 
     // Joker kartlar için en uygun rengi seç (eldeki renklerin dağılımına göre)
