@@ -38,8 +38,8 @@ public class Deck {
             cards.add(new ActionCard(color, CardType.SKIP));
             
             // Her renk için birer tane joker
-            cards.add(new ActionCard(color, CardType.WILD));
-            cards.add(new ActionCard(color, CardType.WILD_DRAW_FOUR));
+            cards.add(new ActionCard(Color.WILD, CardType.WILD));
+            cards.add(new ActionCard(Color.WILD, CardType.WILD_DRAW_FOUR));
         }
         
         // Tek bir el değiştirme kartı

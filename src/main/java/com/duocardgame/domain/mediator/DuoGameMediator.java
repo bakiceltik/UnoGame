@@ -212,7 +212,8 @@ public class DuoGameMediator implements GameMediator {
         }
 
         if (!card.isPlayable(topCard) && card.getColor() != currentColor &&
-                !(card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR || card.getType() == CardType.SHUFFLE_HANDS)) {
+                !(card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR
+                        || card.getType() == CardType.SHUFFLE_HANDS)) {
             throw new IllegalArgumentException("Bu kart uyumlu değil");
         }
 
