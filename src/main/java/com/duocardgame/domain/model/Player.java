@@ -64,13 +64,11 @@ public class Player {
 
         // Önce eldeki kartlarda topCard'ın rengiyle eşleşen kart var mı kontrol et
         boolean hasMatchingColorCard = hasMatchingColorCard(topCard.getColor());
-        System.out.println("Eldeki kartlarda " + topCard.getColor() + " renginde kart var mı: " + hasMatchingColorCard);
-
         for (Card card : hand) {
             if (card.isPlayable(topCard) && card.getType() != CardType.WILD_DRAW_FOUR) {
                 playableCards.add(card);
-            } else if (card.getType() == CardType.WILD) {
-                // Wild kartlar her zaman oynanabilir
+            } else if (card.getType() == CardType.WILD || card.getType() == CardType.SHUFFLE_HANDS) {
+                // Wild kartlar ve shuffle hands her zaman oynanabilir
                 playableCards.add(card);
             } else if (card.getType() == CardType.WILD_DRAW_FOUR) {
                 // Wild Draw Four kartı sadece eldeki kartlarda topCard'ın rengiyle eşleşen kart
