@@ -1,73 +1,99 @@
 # Duo Card Game
 
-Bu proje, Duo Card Game adlı kart oyununu Java programlama dili ile gerçekleştirmektedir. Oyun, 2-4 oyuncunun yer aldığı, her turun sonunda kazanan oyuncunun diğer oyuncuların ellerinde kalan kartların değeri kadar puan kazandığı ve ilk 500 puana ulaşan oyuncunun oyunu kazandığı bir kart oyunudur.
+Duo Card Game, Java programlama dili ile geliştirilmiş bir kart oyunudur. Bu oyun Uno'ya benzer özelliklere sahiptir ve 2-4 oyuncu arasında oynanır.
 
 ## Proje Yapısı
 
-Proje, 4 katmanlı mimari kullanılarak geliştirilmiştir:
+Proje, katmanlı mimari prensiplerine uygun olarak tasarlanmıştır:
 
-1. **Presentation Layer (Sunum Katmanı)**:
-   - Kullanıcı arayüzü bileşenleri
-   - `ConsoleUI`: Konsol tabanlı kullanıcı arayüzü
-   - `DuoCardGameMain`: Uygulamanın giriş noktası
-   - Application Layer'a bağımlıdır
+1. **Presentation Layer (Sunum Katmanı)**
+   - Kullanıcıya oyunun akışını gösterir.
+   - `ConsoleUI` sınıfı konsolda oyunu görüntüler.
+   - `DuoCardGameMain` oyunun başlangıç noktasıdır.
 
-2. **Application Layer (Uygulama Katmanı)**:
-   - Oyun akışını ve kurallarını yöneten sınıflar
-   - `GameManager`: Oyun akışını koordine eden sınıf
-   - `GameService`: Domain Layer ile iletişim kuran servis sınıfı
-   - `TurnManager`: Oyuncu sırası ve turları yöneten sınıf
-   - Domain Layer'a bağımlıdır
+2. **Application Layer (Uygulama Katmanı)**
+   - Oyun akışını yönetir ve oyun kurallarını uygular.
+   - `GameManager` sınıfı oyun akışını yönetir.
+   - `TurnManager` sınıfı oyuncu sırasını ve yönünü belirler.
 
-3. **Domain Layer (İş Mantığı Katmanı)**:
-   - Oyun modelini ve kurallarını tanımlayan sınıflar
-   - `Card`, `NumberCard`, `ActionCard`: Kart hiyerarşisi
-   - `Player`: Oyuncu modeli
-   - `Deck`: Kart destesi
-   - `Color`, `CardType`: Enum sınıfları
-   - `GameMediator`, `DuoGameMediator`: Mediator Pattern uygulaması
-   - Data Access Layer'a bağımlıdır
+3. **Domain Layer (İş Mantığı Katmanı)**
+   - Oyunun kurallarını yönetir, oyuncular ve kartları temsil eder.
+   - `Card`, `Player`, `Deck` gibi temel sınıflar.
+   - Mediator desenini kullanarak oyuncular arası iletişimi sağlar.
 
-4. **Data Access Layer (Veri Katmanı)**:
-   - Veri erişim ve kalıcılık sınıfları
-   - `GameRepository`: Oyun durumunu kaydetmek için arayüz
-   - `CSVGameRepository`: CSV dosyasına veri kaydetme ve okuma işlevselliği
-   - Hiçbir katmana bağımlı değildir
+4. **Data Access Layer (Veri Katmanı)**
+   - CSV dosyasına veri kaydetmek ve verileri almak.
+   - `GameRepository` ve `CSVGameRepository` sınıfları.
+
+## Tasarım Desenleri
+
+Proje aşağıdaki tasarım desenlerini kullanmaktadır:
+
+- **Mediator Pattern**: `GameMediator` ve `DuoGameMediator` sınıfları oyun elemanları arasındaki iletişimi yönetir.
+- **Strategy Pattern**: Kart oynama stratejileri için kullanılır.
+- **Factory Pattern**: Kart oluşturulması için kullanılır.
+
+## Gereksinimler
+
+- Java 8 veya üzeri
+- Maven
+
+## Kurulum ve Çalıştırma
+
+### Maven ile Çalıştırma
+
+1. Terminal veya komut istemcisini açın
+2. Proje dizinine gidin
+3. Projeyi derlemek için:
+   ```
+   mvn clean compile
+   ```
+4. Projeyi çalıştırmak için:
+   ```
+   mvn exec:java -Dexec.mainClass="com.duocardgame.presentation.DuoCardGameMain"
+   ```
+
+### JAR Dosyası Oluşturma
+
+1. JAR dosyası oluşturmak için:
+   ```
+   mvn clean package
+   ```
+2. Oluşturulan JAR dosyasını çalıştırmak için:
+   ```
+   java -jar target/duocardgame-1.0.jar
+   ```
 
 ## Oyun Kuralları
 
-- 2-4 oyuncu, daire şeklinde oturur
-- 109 kartlık özel bir deste kullanılır
-- Her oyuncuya başlangıçta 7 kart dağıtılır
-- Amaç, elinizdeki tüm kartlardan ilk kurtulan olmaktır
-- Her turun sonunda, kazanan oyuncu diğer oyuncuların elinde kalan kartların değeri kadar puan kazanır
-- İlk 500 puana ulaşan oyuncu oyunu kazanır
-- Oyun durumu her tur sonunda CSV dosyasına kaydedilir
+- Her oyuncu başlangıçta 7 kart alır.
+- Amaç, elinizdeki tüm kartları bitirmektir.
+- Üst kart ile aynı renk veya sayıdaki kartları oynayabilirsiniz.
+- Oynayacak kartınız yoksa desteden kart çekmelisiniz.
+- İlk elindeki kartları bitiren oyuncu turu kazanır.
+- 500 puana ulaşan oyuncu oyunu kazanır.
 
-## Kullanılan Tasarım Desenleri
+### Özel Kartlar
 
-- **Katmanlı Mimari (Layered Architecture)**: Presentation, Application, Domain ve Data Access katmanları
-- **Mediator Pattern**: Oyun bileşenleri arasındaki iletişimi koordine etmek için `GameMediator` arayüzü
-- **Repository Pattern**: Veri erişimi için `GameRepository` arayüzü
-- **Object-Oriented Design Principles**: Inheritance, Polymorphism, Encapsulation, Abstraction
+- **Draw Two**: Sonraki oyuncu 2 kart çeker ve sırasını kaybeder.
+- **Reverse**: Oyun yönünü değiştirir.
+- **Skip**: Sonraki oyuncunun sırası atlanır.
+- **Wild**: İstediğiniz rengi seçebilirsiniz.
+- **Wild Draw Four**: Renk seçer ve sonraki oyuncu 4 kart çeker.
+- **Shuffle Hands**: Tüm oyuncuların kartları karıştırılıp yeniden dağıtılır.
 
-## Çalıştırma
+## Oyun Görselleri
 
-Projeyi çalıştırmak için:
+Oyun konsol tabanlı bir arayüze sahiptir. ANSI renk kodları kullanılarak kartlar renkli olarak gösterilir.
 
-1. Kodu klonlayın
-2. Maven kullanarak derleyin: `mvn clean install`
-3. `DuoCardGameMain` sınıfını çalıştırın:
-   ```
-   java -cp target/duocardgame-1.0-SNAPSHOT.jar com.duocardgame.presentation.DuoCardGameMain
-   ```
+## Geliştirme
 
-## Kart Tipleri ve Etkileri
+Projeyi geliştirmek için:
 
-- **Sayı Kartları (0-9)**: Yüz değeri puan değerini belirler
-- **Draw Two (+2)**: Sonraki oyuncu 2 kart çeker ve turunu kaçırır
-- **Reverse**: Oyun yönünü değiştirir
-- **Skip**: Sonraki oyuncuyu atlar
-- **Wild**: Oyuncu istediği rengi seçebilir
-- **Wild Draw Four (+4)**: Sonraki oyuncu 4 kart çeker ve oyuncu renk seçer
-- **Shuffle Hands**: Tüm oyuncuların ellerindeki kartlar karıştırılır ve yeniden dağıtılır 
+1. Projeyi fork edin
+2. Geliştirmelerinizi yapın
+3. Pull request gönderin
+
+## Lisans
+
+Bu proje açık kaynaklıdır. 

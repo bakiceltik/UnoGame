@@ -149,8 +149,14 @@ public class DuoGameMediator implements GameMediator {
             case DRAW_TWO:
                 // İlk oyuncu iki kart çeker ve turunu kaçırır
                 Player nextPlayer = players.get((dealerIndex + 1) % players.size());
-                drawCard(nextPlayer);
-                drawCard(nextPlayer);
+                // Önceki kontrolü atlamak için özel durum
+                // Şimdi kartı doğrudan ele ekliyoruz
+                for (int i = 0; i < 2; i++) {
+                    Optional<Card> drawnCard = drawPile.drawCard();
+                    if (drawnCard.isPresent()) {
+                        nextPlayer.addCardToHand(drawnCard.get());
+                    }
+                }
                 // İlk oyuncuyu güncelle
                 currentPlayerIndex = (dealerIndex + 2) % players.size();
                 break;
@@ -208,40 +214,58 @@ public class DuoGameMediator implements GameMediator {
     
     @Override
     public void drawCard(Player player) {
-        Optional<Card> drawnCard = drawPile.drawCard();
+        // Yeni tur başlangıcında ilk kartı çekerken özel durum
+        boolean isInitialDraw = currentPlayerIndex == -1 || player == null || getCurrentPlayer() == null;
         
-        // Çekme destesi boş ise, çöp destesini karıştırıp yeni çekme destesi yap
-        if (!drawnCard.isPresent() && !discardPile.isEmpty()) {
-            Card topCard = discardPile.remove(discardPile.size() - 1);
-            drawPile.addCards(discardPile);
-            discardPile.clear();
-            discardPile.add(topCard);
-            drawPile.shuffle();
+        // Eğer yeni turda ilk kart açılıyorsa veya mevcut oyuncu kart çekiyorsa işlem yapılabilir
+        if (isInitialDraw || getCurrentPlayer() == player) {
+            Optional<Card> drawnCard = drawPile.drawCard();
             
-            drawnCard = drawPile.drawCard();
-        }
-        
-        if (drawnCard.isPresent()) {
-            player.addCardToHand(drawnCard.get());
-            
-            // Eğer çekilen kart oynanabilirse, hemen oynayabilir
-            if (drawnCard.get().isPlayable(getTopCard()) || 
-                drawnCard.get().getColor() == currentColor ||
-                drawnCard.get().getType() == CardType.WILD ||
-                drawnCard.get().getType() == CardType.WILD_DRAW_FOUR) {
+            // Çekme destesi boş ise, çöp destesini karıştırıp yeni çekme destesi yap
+            if (!drawnCard.isPresent() && !discardPile.isEmpty()) {
+                Card topCard = discardPile.remove(discardPile.size() - 1);
+                drawPile.addCards(discardPile);
+                discardPile.clear();
+                discardPile.add(topCard);
+                drawPile.shuffle();
                 
-                // Burada oyuncunun kartı oynamak isteyip istemediği sorulabilir
-                // Ama şimdi rastgele bir karar verelim
-                boolean playCard = random.nextBoolean();
-                
-                if (playCard) {
-                    playCard(player, drawnCard.get());
-                    return;
-                }
+                drawnCard = drawPile.drawCard();
             }
             
-            // Kart oynanmadıysa, bir sonraki oyuncuya geç
-            nextTurn();
+            if (drawnCard.isPresent()) {
+                // Eğer oyuncu null değilse (özel durum değilse) kart ekle
+                if (player != null) {
+                    player.addCardToHand(drawnCard.get());
+                }
+                
+                // Eğer normal oyun akışındaysak ve çekilen kart oynanabilirse oynat
+                if (!isInitialDraw && drawnCard.get().isPlayable(getTopCard()) || 
+                    !isInitialDraw && (drawnCard.get().getColor() == currentColor ||
+                    drawnCard.get().getType() == CardType.WILD ||
+                    drawnCard.get().getType() == CardType.WILD_DRAW_FOUR)) {
+                    
+                    // Burada oyuncunun kartı oynamak isteyip istemediği sorulabilir
+                    // Ama şimdi rastgele bir karar verelim
+                    boolean playCard = random.nextBoolean();
+                    
+                    if (playCard) {
+                        // Önemli: playCard metodu içindeki sıra kontrolünü geçmek için burada sıranın 
+                        // hala çeken oyuncuda olduğundan emin olalım
+                        playCard(player, drawnCard.get());
+                        return;
+                    }
+                }
+                
+                // Özel durum değilse ve kart oynanmadıysa, bir sonraki oyuncuya geç
+                if (!isInitialDraw) {
+                    nextTurn();
+                }
+                
+                // Çekilen kartı döndür (özel durum için)
+                return;
+            }
+        } else {
+            throw new IllegalStateException("Sırası gelmeyen oyuncu kart çekemez");
         }
     }
     
@@ -257,9 +281,18 @@ public class DuoGameMediator implements GameMediator {
         switch (type) {
             case DRAW_TWO:
                 Player nextPlayer = getNextPlayer();
-                drawCard(nextPlayer);
-                drawCard(nextPlayer);
+                // Önce sırayı bir sonraki oyuncuya geçirelim, böylece kart çekme işlemi doğru oyuncuya yapılabilir
                 nextTurn();
+                // Şimdi kart çekme işlemini yapalım
+                for (int i = 0; i < 2; i++) {
+                    if (!drawPile.isEmpty()) {
+                        Optional<Card> drawn = drawPile.drawCard();
+                        if (drawn.isPresent()) {
+                            nextPlayer.addCardToHand(drawn.get());
+                        }
+                    }
+                }
+                // Oyuncu zaten turunu kaybettiğinden, tekrar sıra değiştirmeye gerek yok
                 break;
                 
             case REVERSE:
@@ -277,11 +310,18 @@ public class DuoGameMediator implements GameMediator {
             case WILD_DRAW_FOUR:
                 nextPlayer = getNextPlayer();
                 changeColor(player.chooseColor());
-                drawCard(nextPlayer);
-                drawCard(nextPlayer);
-                drawCard(nextPlayer);
-                drawCard(nextPlayer);
+                // Önce sırayı bir sonraki oyuncuya geçirelim
                 nextTurn();
+                // Şimdi kart çekme işlemini yapalım
+                for (int i = 0; i < 4; i++) {
+                    if (!drawPile.isEmpty()) {
+                        Optional<Card> drawn = drawPile.drawCard();
+                        if (drawn.isPresent()) {
+                            nextPlayer.addCardToHand(drawn.get());
+                        }
+                    }
+                }
+                // Oyuncu zaten turunu kaybettiğinden, tekrar sıra değiştirmeye gerek yok
                 break;
                 
             case SHUFFLE_HANDS:
