@@ -64,9 +64,26 @@ public class Player {
         for (Card card : hand) {
             if (card.isPlayable(topCard)) {
                 playableCards.add(card);
+            } else if (card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR) {
+                // Wild kartlar için özel durum kontrolü
+                if (!hasMatchingColorCard(topCard.getColor())) {
+                    // Eğer eldeki kartlarda topCard'ın rengiyle eşleşen kart yoksa wild oynanabilir
+                    playableCards.add(card);
+                }
+                // Wild Draw Four kartı ve Wild kartı sadece eldeki kartlarda topCard'ın rengiyle eşleşen kart yoksa oynanabilir
             }
         }
         return playableCards;
+    }
+    
+    // Eldeki kartlar arasında belirli bir renge sahip kart var mı kontrol et
+    private boolean hasMatchingColorCard(Color color) {
+        for (Card card : hand) {
+            if (card.getColor() == color) {
+                return true;
+            }
+        }
+        return false;
     }
     
     // Rastgele bir kart oynama stratejisi

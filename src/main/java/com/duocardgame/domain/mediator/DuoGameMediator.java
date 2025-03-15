@@ -190,7 +190,30 @@ public class DuoGameMediator implements GameMediator {
         
         // Kart uyumlu mu kontrol et
         Card topCard = getTopCard();
-        if (!card.isPlayable(topCard) && card.getColor() != currentColor) {
+        
+        // Wild Draw Four kartı için özel kontrol
+        if (card.getType() == CardType.WILD_DRAW_FOUR || card.getType() == CardType.WILD) {
+            // Oyuncunun elinde, mevcut renkte kart olup olmadığını kontrol et
+            boolean hasMatchingColorCard = false;
+            for (Card handCard : player.getHand()) {
+                if (handCard != card && handCard.getColor() == topCard.getColor()) {
+                    hasMatchingColorCard = true;
+                    break;
+                }
+            }
+            
+            // Eğer oyuncunun elinde eşleşen renkte kart varsa ve bu bir Wild Draw Four kartıysa, oynanamaz
+            if (hasMatchingColorCard) {
+                if (card.getType() == CardType.WILD_DRAW_FOUR) {
+                    throw new IllegalArgumentException("Wild Draw Four kartı sadece eşleşen renkte kart yoksa oynanabilir");
+                } else if (card.getType() == CardType.WILD) {
+                    throw new IllegalArgumentException("Wild kartı sadece eşleşen renkte kart yoksa oynanabilir");
+                }
+            }
+        }
+        
+        if (!card.isPlayable(topCard) && card.getColor() != currentColor && 
+            !(card.getType() == CardType.WILD || card.getType() == CardType.WILD_DRAW_FOUR)) {
             throw new IllegalArgumentException("Bu kart uyumlu değil");
         }
         
@@ -258,11 +281,52 @@ public class DuoGameMediator implements GameMediator {
                 }
                 
                 // Eğer normal oyun akışındaysak ve çekilen kart oynanabilirse oynat
-                if (!isInitialDraw && drawnCard.get().isPlayable(getTopCard()) || 
-                    !isInitialDraw && (drawnCard.get().getColor() == currentColor ||
-                    drawnCard.get().getType() == CardType.WILD ||
-                    drawnCard.get().getType() == CardType.WILD_DRAW_FOUR)) {
+                boolean canPlayDrawnCard = false;
+                
+                // Çekilen kartın oynanabilir olup olmadığını kontrol et
+                if (!isInitialDraw) {
+                    Card topCard = getTopCard();
+                    Card drawnCardObj = drawnCard.get();
                     
+                    // Temel oynanabilirlik kurallarını kontrol et
+                    if (drawnCardObj.isPlayable(topCard) || drawnCardObj.getColor() == currentColor) {
+                        canPlayDrawnCard = true;
+                    }
+                    // Wild kartı sadece eldeki kartlarda topCard'ın rengiyle eşleşen kart yoksa oynanabilir
+                    else if (drawnCardObj.getType() == CardType.WILD) {
+                        // Oyuncunun elinde eşleşen renkte başka kart var mı kontrol et
+                        boolean hasMatchingColorCard = false;
+                        for (Card handCard : player.getHand()) {
+                            if (handCard != drawnCardObj && handCard.getColor() == topCard.getColor()) {
+                                hasMatchingColorCard = true;
+                                break;
+                            }
+                        }
+                        
+                        // Eğer oyuncunun elinde eşleşen renkte kart yoksa Wild oynanabilir
+                        if (!hasMatchingColorCard) {
+                            canPlayDrawnCard = true;
+                        }
+                    }
+                    // Wild Draw Four kartı özel duruma bağlı
+                    else if (drawnCardObj.getType() == CardType.WILD_DRAW_FOUR) {
+                        // Oyuncunun elinde eşleşen renkte başka kart var mı kontrol et
+                        boolean hasMatchingColorCard = false;
+                        for (Card handCard : player.getHand()) {
+                            if (handCard != drawnCardObj && handCard.getColor() == topCard.getColor()) {
+                                hasMatchingColorCard = true;
+                                break;
+                            }
+                        }
+                        
+                        // Eğer oyuncunun elinde eşleşen renkte kart yoksa Wild Draw Four oynanabilir
+                        if (!hasMatchingColorCard) {
+                            canPlayDrawnCard = true;
+                        }
+                    }
+                }
+                
+                if (canPlayDrawnCard) {
                     // Burada oyuncunun kartı oynamak isteyip istemediği sorulabilir
                     // Ama şimdi rastgele bir karar verelim
                     boolean playCard = random.nextBoolean();
@@ -320,7 +384,9 @@ public class DuoGameMediator implements GameMediator {
                 break;
                 
             case SKIP:
-                nextTurn();
+                // Bir sonraki oyuncuyu atlamak için iki kez nextTurn() çağrılması gerekir
+                nextTurn(); // Bir sonraki oyuncuya geç
+                nextTurn(); // Bir sonraki oyuncuyu atla - yani ikinci oyuncuya geç
                 break;
                 
             case WILD:

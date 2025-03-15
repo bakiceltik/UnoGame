@@ -22,11 +22,6 @@ public abstract class Card {
     
     // Kartın oynanabilir olup olmadığını kontrol et
     public boolean isPlayable(Card topCard) {
-        // Joker kartları her zaman oynanabilir
-        if (this.type == CardType.WILD || this.type == CardType.WILD_DRAW_FOUR) {
-            return true;
-        }
-        
         // Aynı renk veya aynı tip kartlar oynanabilir
         return this.color == topCard.getColor() || 
                (this.type == topCard.getType() && this.type != CardType.NUMBER) ||
