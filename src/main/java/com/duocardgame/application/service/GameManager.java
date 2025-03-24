@@ -82,11 +82,11 @@ public class GameManager {
         }
 
         // Mevcut oyuncunun oynayabileceği kartları bul
-        List<Card> playableCards = currentPlayer.getPlayableCards(topCard, currentColor);
+        List<Card> playableCards = currentPlayer.getPlayableCards(topCard, currentColor, new com.duocardgame.domain.rules.StandardPlayRules());
 
         if (!playableCards.isEmpty()) {
             // Oynanabilir kart varsa, yapay zekaya kartı oynat
-            Optional<Card> aiDecision = currentPlayer.playCard(topCard, currentColor);
+            Optional<Card> aiDecision = currentPlayer.playCard(topCard, currentColor, new com.duocardgame.domain.rules.StandardPlayRules());
 
             if (aiDecision.isPresent()) {
                 gameMediator.playCard(currentPlayer, aiDecision.get());

@@ -54,7 +54,10 @@ public class DuoGameMediator implements GameMediator {
 
         // Oyuncuları oluştur
         for (int i = 1; i <= playerCount; i++) {
-            players.add(new Player("Player" + i));
+            // RandomPlayStrategy ve FrequencyColorChooser stratejileri ile oyuncuları oluştur
+            players.add(new Player("Player" + i, 
+                                   new com.duocardgame.domain.strategy.RandomPlayStrategy(), 
+                                   new com.duocardgame.domain.strategy.FrequencyColorChooser()));
         }
 
         // İlk turu başlat

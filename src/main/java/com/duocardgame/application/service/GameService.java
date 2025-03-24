@@ -125,7 +125,7 @@ public class GameService {
      * @return Oynanabilir kartlar listesi
      */
     public List<Card> getPlayableCards(Player player) {
-        return player.getPlayableCards(getTopCard(), gameMediator.getCurrentColor());
+        return player.getPlayableCards(getTopCard(), gameMediator.getCurrentColor(), new com.duocardgame.domain.rules.StandardPlayRules());
     }
 
     /**

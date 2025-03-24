@@ -20,13 +20,32 @@ public abstract class Card {
     // Her kart için puan değerini hesapla
     public abstract int getPointValue();
     
-    // Kartın oynanabilir olup olmadığını kontrol et
+    // Kartın oynanabilir olup olmadığını kontrol eden metot
     public boolean isPlayable(Card topCard) {
-        // Aynı renk veya aynı tip kartlar oynanabilir
-        return this.color == topCard.getColor() || 
-               (this.type == topCard.getType() && this.type != CardType.NUMBER) ||
-               (this.type == CardType.NUMBER && topCard.getType() == CardType.NUMBER && 
-                ((NumberCard)this).getNumber() == ((NumberCard)topCard).getNumber());
+        // Aynı renk
+        if (this.getColor() == topCard.getColor()) {
+            return true;
+        }
+        
+        // Aynı tip (aksiyon kartları)
+        if (this.getType() == topCard.getType() && this.getType() != CardType.NUMBER) {
+            return true;
+        }
+        
+        // Aynı sayı (sayı kartları)
+        if (this.getType() == CardType.NUMBER && topCard.getType() == CardType.NUMBER) {
+            NumberCard thisCard = (NumberCard) this;
+            NumberCard otherCard = (NumberCard) topCard;
+            return thisCard.getNumber() == otherCard.getNumber();
+        }
+        
+        // WILD ve WILD_DRAW_FOUR kartları her zaman oynanabilir
+        if (this.getType() == CardType.WILD || this.getType() == CardType.WILD_DRAW_FOUR || 
+            this.getType() == CardType.SHUFFLE_HANDS) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override
