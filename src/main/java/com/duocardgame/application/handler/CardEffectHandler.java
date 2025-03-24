@@ -9,7 +9,6 @@ import com.duocardgame.domain.model.Player;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class CardEffectHandler {
     private final GameMediator gameMediator;
@@ -18,38 +17,51 @@ public class CardEffectHandler {
         this.gameMediator = gameMediator;
     }
 
-    public void handleFirstActionCard(Card card, List<Player> players, com.duocardgame.application.manager.PlayerTurnManager turnManager) {
+    public void handleFirstActionCard(Card card, List<Player> players,
+            com.duocardgame.application.manager.PlayerTurnManager turnManager) {
         CardType type = card.getType();
         int dealerIndex = turnManager.getDealerIndex();
+
+        // Set the initial current player before applying effects
+        turnManager.setCurrentPlayerIndex((dealerIndex + 1) % players.size());
 
         switch (type) {
             case WILD:
                 Color selectedColor = players.get((dealerIndex + 1) % players.size()).chooseColor();
                 gameMediator.changeColor(selectedColor);
                 System.out.println("\n█ Initial Color Selection █");
-                System.out.println("» First card is WILD! " + players.get((dealerIndex + 1) % players.size()).getName() +
-                        " selected " + selectedColor + " as the starting color!");
+                System.out
+                        .println("» First card is WILD! " + players.get((dealerIndex + 1) % players.size()).getName() +
+                                " selected " + selectedColor + " as the starting color!");
                 System.out.println("» All players must now play " + selectedColor + " cards or matching card types.");
                 break;
 
             case WILD_DRAW_FOUR:
-                // put the card back to the draw pile
-                gameMediator.drawCard(null);
+                // For the first card, treat it like a regular WILD
+                Color selectedColorWild4 = players.get((dealerIndex + 1) % players.size()).chooseColor();
+                gameMediator.changeColor(selectedColorWild4);
+                System.out.println("\n█ Initial Color Selection █");
+                System.out.println(
+                        "» First card is WILD_DRAW_FOUR! " + players.get((dealerIndex + 1) % players.size()).getName() +
+                                " selected " + selectedColorWild4 + " as the starting color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorWild4 + " cards or matching card types.");
                 break;
 
             case DRAW_TWO:
                 // first player draws two cards and skips their turn
                 Player nextPlayer = players.get((dealerIndex + 1) % players.size());
-                for (int i = 0; i < 2; i++) {
-                    gameMediator.drawCard(nextPlayer);
-                }
-                // update the current player
+                turnManager.setCurrentPlayerIndex((dealerIndex + 1) % players.size()); // Set current player before
+                                                                                       // drawing
+                forceDrawCards(nextPlayer, 2);
+                // update the current player to skip the first player
                 turnManager.setCurrentPlayerIndex((dealerIndex + 2) % players.size());
                 break;
 
             case REVERSE:
                 // reverse the game direction
                 turnManager.reverseDirection();
+                // In a reverse at start, the dealer plays first
                 turnManager.setCurrentPlayerIndex(dealerIndex);
                 break;
 
@@ -59,13 +71,14 @@ public class CardEffectHandler {
                 break;
 
             case SHUFFLE_HANDS:
-                // first player chooses the color
                 Color selectedColorShuffle = players.get((dealerIndex + 1) % players.size()).chooseColor();
                 gameMediator.changeColor(selectedColorShuffle);
                 System.out.println("\n█ Initial Color Selection █");
-                System.out.println("» First card is SHUFFLE_HANDS! " + players.get((dealerIndex + 1) % players.size()).getName() +
-                        " selected " + selectedColorShuffle + " as the starting color!");
-                System.out.println("» All players must now play " + selectedColorShuffle + " cards or matching card types.");
+                System.out.println(
+                        "» First card is SHUFFLE_HANDS! " + players.get((dealerIndex + 1) % players.size()).getName() +
+                                " selected " + selectedColorShuffle + " as the starting color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorShuffle + " cards or matching card types.");
                 break;
 
             default:
@@ -78,8 +91,9 @@ public class CardEffectHandler {
 
         switch (type) {
             case DRAW_TWO:
-                Player nextPlayer = gameMediator.getPlayers().get((gameMediator.getPlayers().indexOf(player) + 1) % gameMediator.getPlayers().size());
-             
+                Player nextPlayer = gameMediator.getPlayers()
+                        .get((gameMediator.getPlayers().indexOf(player) + 1) % gameMediator.getPlayers().size());
+
                 forceDrawCards(nextPlayer, 2);
                 gameMediator.nextTurn();
                 break;
@@ -102,13 +116,15 @@ public class CardEffectHandler {
                 break;
 
             case WILD_DRAW_FOUR:
-                Player wildDrawFourNextPlayer = gameMediator.getPlayers().get((gameMediator.getPlayers().indexOf(player) + 1) % gameMediator.getPlayers().size());
+                Player wildDrawFourNextPlayer = gameMediator.getPlayers()
+                        .get((gameMediator.getPlayers().indexOf(player) + 1) % gameMediator.getPlayers().size());
                 Color selectedColorWild4 = player.chooseColor();
                 gameMediator.changeColor(selectedColorWild4);
                 System.out.println("\n█ Color Selection █");
                 System.out.println("» " + player.getName() + " selected " + selectedColorWild4 + " as the new color!");
-                System.out.println("» All players must now play " + selectedColorWild4 + " cards or matching card types.");
-                
+                System.out.println(
+                        "» All players must now play " + selectedColorWild4 + " cards or matching card types.");
+
                 forceDrawCards(wildDrawFourNextPlayer, 4);
                 gameMediator.nextTurn();
                 break;
@@ -118,8 +134,10 @@ public class CardEffectHandler {
                 Color selectedColorShuffle = player.chooseColor();
                 gameMediator.changeColor(selectedColorShuffle);
                 System.out.println("\n█ Color Selection █");
-                System.out.println("» " + player.getName() + " selected " + selectedColorShuffle + " as the new color!");
-                System.out.println("» All players must now play " + selectedColorShuffle + " cards or matching card types.");
+                System.out
+                        .println("» " + player.getName() + " selected " + selectedColorShuffle + " as the new color!");
+                System.out.println(
+                        "» All players must now play " + selectedColorShuffle + " cards or matching card types.");
                 break;
 
             default:
@@ -147,17 +165,16 @@ public class CardEffectHandler {
         }
     }
 
-   
     private void forceDrawCards(Player player, int count) {
         System.out.println("\n█ Special Card Effect - Force Drawing Cards █");
         System.out.println("» " + player.getName() + " must draw " + count + " cards!");
-        
+
         for (int i = 0; i < count; i++) {
             try {
-          
-                java.util.Optional<com.duocardgame.domain.model.Card> drawnCard = 
-                    ((com.duocardgame.application.mediator.DuoGameMediator)gameMediator).getDrawPileCard();
-                
+
+                java.util.Optional<com.duocardgame.domain.model.Card> drawnCard = ((com.duocardgame.application.mediator.DuoGameMediator) gameMediator)
+                        .getDrawPileCard();
+
                 if (drawnCard.isPresent()) {
                     player.addCardToHand(drawnCard.get());
                     System.out.println("» " + player.getName() + " drew: " + drawnCard.get());
@@ -169,7 +186,7 @@ public class CardEffectHandler {
                 System.out.println("» Error while drawing card: " + e.getMessage());
             }
         }
-        
+
         System.out.println("» " + player.getName() + " now has " + player.getHand().size() + " cards.");
     }
-} 
+}
