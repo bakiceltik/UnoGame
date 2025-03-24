@@ -2,32 +2,23 @@ package com.duocardgame.presentation.ui;
 
 import java.util.Scanner;
 
-/**
- * Kullanıcı ile etkileşimden sorumlu sınıf.
- */
+
 public class UserInteractionManager {
     private final Scanner scanner;
     private final ConsoleFormatter formatter;
     
-    /**
-     * Yeni bir UserInteractionManager örneği oluşturur.
-     */
+
     public UserInteractionManager() {
         this.scanner = new Scanner(System.in);
         this.formatter = new ConsoleFormatter();
     }
-    
-    /**
-     * Kullanıcı girişini bekler (ENTER tuşu).
-     */
+
     public void waitForUserInput() {
         System.out.println("Press ENTER to continue.");
         scanner.nextLine();
     }
     
-    /**
-     * Kullanıcıya hoş geldin mesajını ve oyun kurallarını gösterir.
-     */
+
     public void showWelcomeMessage() {
         System.out.println("\n" + ConsoleFormatter.ANSI_CYAN + ConsoleFormatter.ANSI_BOLD);
         System.out.println("======================================================");
@@ -64,11 +55,7 @@ public class UserInteractionManager {
         waitForUserInput();
     }
     
-    /**
-     * Belirtilen milisaniye kadar bekler.
-     * 
-     * @param ms Beklenecek milisaniye
-     */
+
     public void sleep(int ms) {
         try {
             Thread.sleep(ms);
@@ -77,33 +64,20 @@ public class UserInteractionManager {
         }
     }
     
-    /**
-     * Konsol ekranını temizler.
-     */
+
     public void clearScreen() {
-        // Bazı platformlarda çalışmayabilir
         System.out.print("\033[H\033[2J");
         System.out.flush();
-
-        // Alternatif olarak boş satırlar yazdır - azaltılmış satır sayısı
         for (int i = 0; i < 5; i++) {
             System.out.println();
         }
     }
     
-    /**
-     * Scanner nesnesini kapatır.
-     * Uygulama sonlandığında çağrılmalıdır.
-     */
     public void close() {
         scanner.close();
     }
     
-    /**
-     * Scanner nesnesini döndürür.
-     * 
-     * @return Scanner nesnesi
-     */
+
     public Scanner getScanner() {
         return scanner;
     }

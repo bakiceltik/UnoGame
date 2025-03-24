@@ -14,11 +14,10 @@ public class PlayerTurnManager {
     private boolean isClockwise;
 
     public PlayerTurnManager() {
-        this.isClockwise = true; // Varsayılan yön saat yönü (sağa doğru)
+        this.isClockwise = true;
     }
 
     public void determineFirstDealer(List<Player> players, DeckManager deckManager) {
-        // Her oyuncuya bir kart dağıt, en yüksek karta sahip olan kurpiyedir
         List<Card> dealerCards = new ArrayList<>();
         List<Integer> cardValues = new ArrayList<>();
 
@@ -31,11 +30,9 @@ public class PlayerTurnManager {
             }
         }
 
-        // En yüksek değere sahip oyuncuyu bul
         int maxValue = Collections.max(cardValues);
         dealerIndex = cardValues.indexOf(maxValue);
 
-        // Dağıtılan kartları tekrar desteye ekle ve karıştır
         for (Card card : dealerCards) {
             deckManager.getDrawPile().addCard(card);
         }

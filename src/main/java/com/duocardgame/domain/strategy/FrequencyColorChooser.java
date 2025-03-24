@@ -8,9 +8,6 @@ import java.util.Random;
 import com.duocardgame.domain.model.Card;
 import com.duocardgame.domain.model.Color;
 
-/**
- * Eldeki renklerin sıklığına göre en uygun rengi seçen strateji
- */
 public class FrequencyColorChooser implements IColorChooser {
     
     private final Random random;
@@ -25,14 +22,12 @@ public class FrequencyColorChooser implements IColorChooser {
 
         for (Card card : hand) {
             Color cardColor = card.getColor();
-            // Joker kartları sayma
             if (cardColor != Color.WILD) {
                 colorCounts.put(cardColor, colorCounts.getOrDefault(cardColor, 0) + 1);
             }
         }
 
-        // En çok sahip olunan rengi bul
-        Color maxColor = Color.BLUE; // Varsayılan renk
+        Color maxColor = Color.BLUE; //example
         int maxCount = 0;
 
         for (Map.Entry<Color, Integer> entry : colorCounts.entrySet()) {
@@ -42,7 +37,7 @@ public class FrequencyColorChooser implements IColorChooser {
             }
         }
 
-        // Eğer hiç renk kart yoksa veya eşit sayıda kart varsa rastgele bir renk seç
+        // if there is no color card or all color cards have the same number, select a random color
         if (maxCount == 0 || colorCounts.values().stream().distinct().count() == 1) {
             Color[] colors = { Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW };
             return colors[random.nextInt(colors.length)];

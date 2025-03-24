@@ -22,23 +22,20 @@ public class CSVGameRepository implements GameRepository {
         initializeFile();
     }
     
-    /**
-     * CSV dosyasını başlat ve kontrol et.
-     */
+  
     private void initializeFile() {
         File file = new File(csvFilePath);
         try {
-            // Eğer dosya yoksa, dizin yapısını oluştur
             if (!file.exists()) {
                 Path parentPath = file.getParentFile().toPath();
                 Files.createDirectories(parentPath);
                 file.createNewFile();
-                System.out.println("CSV dosyası oluşturuldu: " + file.getAbsolutePath());
+                System.out.println("CSV file created: " + file.getAbsolutePath());
             } else {
-                System.out.println("CSV dosyası zaten var: " + file.getAbsolutePath());
+                System.out.println("CSV file already exists: " + file.getAbsolutePath());
             }
         } catch (IOException e) {
-            System.err.println("CSV dosyası oluşturma hatası: " + e.getMessage());
+            System.err.println("CSV file creation error: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -49,45 +46,39 @@ public class CSVGameRepository implements GameRepository {
         boolean isNewFile = !file.exists() || file.length() == 0;
         
         try {
-            // Dosya yoksa oluştur
             if (!file.exists()) {
                 file.createNewFile();
-                System.out.println("Yeni CSV dosyası oluşturuldu: " + file.getAbsolutePath());
+                System.out.println("New CSV file created: " + file.getAbsolutePath());
             }
             
-            // Başlık ve veri
             String[] header = gameState.get(0);
             String[] data = gameState.get(1);
             
-            // Eğer dosya yeni ise veya boş ise, başlık satırını ekle
             if (isNewFile) {
                 try (FileWriter fw = new FileWriter(file);
                      BufferedWriter bw = new BufferedWriter(fw)) {
-                    // Başlık satırı yaz
                     bw.write(String.join(delimiter, header));
                     bw.newLine();
                     
-                    // Veri satırı yaz
                     bw.write(String.join(delimiter, data));
                     bw.newLine();
                     
-                    System.out.println("Başlık ve ilk veri satırı yazıldı: " + csvFilePath);
+                    System.out.println("Header and first data line written: " + csvFilePath);
                 }
             } else {
-                // Dosya zaten var ve dolu, sadece yeni veri satırını ekle
                 try (FileWriter fw = new FileWriter(file, true);
                      BufferedWriter bw = new BufferedWriter(fw)) {
                     bw.write(String.join(delimiter, data));
                     bw.newLine();
                     
-                    System.out.println("Yeni veri satırı eklendi: " + csvFilePath);
+                    System.out.println("New data line added: " + csvFilePath);
                 }
             }
             
             System.out.println("Game state saved successfully!");
             
         } catch (IOException e) {
-            System.err.println("CSV dosyasına yazma hatası: " + e.getMessage());
+            System.err.println("CSV file write error: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -100,12 +91,11 @@ public class CSVGameRepository implements GameRepository {
                 lineCount++;
             }
             
-            // Başlık satırını çıkar
             if (lineCount > 0) {
                 lineCount--;
             }
         } catch (IOException e) {
-            System.err.println("CSV dosyası okuma hatası: " + e.getMessage());
+            System.err.println("CSV file read error: " + e.getMessage());
         }
         return lineCount;
     }
@@ -116,12 +106,12 @@ public class CSVGameRepository implements GameRepository {
         File file = new File(csvFilePath);
         
         if (!file.exists()) {
-            System.out.println("CSV dosyası bulunamadı: " + csvFilePath);
+            System.out.println("CSV file not found: " + csvFilePath);
             return allGameStates;
         }
         
         if (file.length() == 0) {
-            System.out.println("CSV dosyası boş: " + csvFilePath);
+            System.out.println("CSV file is empty: " + csvFilePath);
             return allGameStates;
         }
         
@@ -133,9 +123,9 @@ public class CSVGameRepository implements GameRepository {
                 allGameStates.add(fields);
             }
             
-            System.out.println("CSV dosyasından " + allGameStates.size() + " satır okundu.");
+            System.out.println("Read " + allGameStates.size() + " lines from CSV file: " + csvFilePath);
         } catch (IOException e) {
-            System.err.println("CSV dosyası okuma hatası: " + e.getMessage());
+            System.err.println("CSV file read error: " + e.getMessage());
             e.printStackTrace();
         }
         

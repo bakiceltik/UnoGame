@@ -27,7 +27,7 @@ public class DeckManager {
     public Optional<Card> drawCard() {
         Optional<Card> drawnCard = drawPile.drawCard();
 
-        // Çekme destesi boş ise, çöp destesini karıştırıp yeni çekme destesi yap
+        // if draw pile is empty, shuffle discard pile and add to draw pile
         if (!drawnCard.isPresent() && !discardPile.isEmpty()) {
             Card topCard = discardPile.remove(discardPile.size() - 1);
             drawPile.addCards(discardPile);
@@ -109,4 +109,4 @@ public class DeckManager {
     public List<Card> getDiscardPile() {
         return discardPile;
     }
-} 
+}

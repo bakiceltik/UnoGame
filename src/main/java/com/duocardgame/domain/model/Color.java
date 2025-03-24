@@ -5,5 +5,5 @@ public enum Color {
     GREEN,
     RED,
     YELLOW,
-    WILD // Joker kartlar için
+    WILD 
 } 

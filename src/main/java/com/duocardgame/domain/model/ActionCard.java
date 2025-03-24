@@ -6,7 +6,7 @@ public class ActionCard extends Card {
         super(color, type);
         
         if (type == CardType.NUMBER) {
-            throw new IllegalArgumentException("ActionCard, NUMBER tipinde olamaz");
+            throw new IllegalArgumentException("ActionCard cannot be a number card");
         }
     }
     
@@ -23,7 +23,7 @@ public class ActionCard extends Card {
             case SHUFFLE_HANDS:
                 return 40;
             default:
-                throw new IllegalStateException("Bilinmeyen kart tipi: " + getType());
+                throw new IllegalStateException("Unknown card type: " + getType());
         }
     }
     

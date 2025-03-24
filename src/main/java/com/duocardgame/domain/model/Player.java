@@ -56,12 +56,10 @@ public class Player {
         return totalScore;
     }
 
-    // Eldeki kartların toplam puan değerini hesapla
     public int calculateHandValue() {
         return hand.stream().mapToInt(Card::getPointValue).sum();
     }
 
-    // Oynanabilir kartları bul
     public List<Card> getPlayableCards(Card topCard, Color currentColor, IPlayable playRules) {
         List<Card> playableCards = new ArrayList<>();
 
@@ -74,7 +72,6 @@ public class Player {
         return playableCards;
     }
 
-    // Kart oynama
     public Optional<Card> playCard(Card topCard, Color currentColor, IPlayable playRules) {
         List<Card> playableCards = getPlayableCards(topCard, currentColor, playRules);
         
@@ -88,12 +85,10 @@ public class Player {
         return selectedCard;
     }
 
-    // Joker kartlar için renk seç
     public Color chooseColor() {
         return colorChooser.chooseColor(hand);
     }
 
-    // Kartı elden çıkar
     public void removeCardFromHand(Card card) {
         hand.remove(card);
     }

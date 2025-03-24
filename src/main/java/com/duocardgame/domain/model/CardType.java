@@ -1,11 +1,11 @@
 package com.duocardgame.domain.model;
 
 public enum CardType {
-    NUMBER,      // Sayı kartları
-    DRAW_TWO,    // +2 çekme kartı
-    REVERSE,     // Yön değiştirme kartı
-    SKIP,        // Pas geçme kartı
-    WILD,        // Joker kartı
-    WILD_DRAW_FOUR, // +4 joker kartı
-    SHUFFLE_HANDS   // El değiştirme kartı
+    NUMBER,      // Number card
+    DRAW_TWO,    // +2 draw card
+    REVERSE,     // Reverse card
+    SKIP,        // Skip card
+    WILD,        // Wild card
+    WILD_DRAW_FOUR, // +4 wild card
+    SHUFFLE_HANDS   // Shuffle hands card
 } 

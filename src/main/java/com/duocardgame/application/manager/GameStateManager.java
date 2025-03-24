@@ -14,10 +14,8 @@ public class GameStateManager {
     }
 
     public void saveGameState(List<Player> players) {
-        // Oyun durumunu CSV dosyasına kaydet
         List<String[]> gameState = new ArrayList<>();
 
-        // Başlık satırı
         String[] header = new String[players.size() + 1];
         header[0] = "Round";
         for (int i = 0; i < players.size(); i++) {
@@ -25,7 +23,6 @@ public class GameStateManager {
         }
         gameState.add(header);
 
-        // Veri satırı
         String[] data = new String[players.size() + 1];
         data[0] = String.valueOf(gameRepository.getRoundCount() + 1);
         for (int i = 0; i < players.size(); i++) {
@@ -35,7 +32,6 @@ public class GameStateManager {
 
         gameRepository.saveGameState(gameState);
 
-        // Konsola tur sonucunu yazdır
         System.out.println("Round " + (gameRepository.getRoundCount()) + " results were recorded.");
         System.out.println("Player Scores:");
         for (Player player : players) {

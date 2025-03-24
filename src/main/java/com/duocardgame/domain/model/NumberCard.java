@@ -7,7 +7,7 @@ public class NumberCard extends Card {
         super(color, CardType.NUMBER);
         
         if (number < 0 || number > 9) {
-            throw new IllegalArgumentException("Sayı kartı değeri 0-9 arasında olmalıdır");
+            throw new IllegalArgumentException("number must be between 0 and 9");
         }
         
         this.number = number;
@@ -19,7 +19,7 @@ public class NumberCard extends Card {
     
     @Override
     public int getPointValue() {
-        return number; // Sayı kartlarının puanı, üzerindeki sayı değeridir
+        return number; 
     }
     
     @Override

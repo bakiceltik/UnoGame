@@ -24,7 +24,6 @@ public class CardEffectHandler {
 
         switch (type) {
             case WILD:
-                // İlk oyuncu renk seçer
                 Color selectedColor = players.get((dealerIndex + 1) % players.size()).chooseColor();
                 gameMediator.changeColor(selectedColor);
                 System.out.println("\n█ Initial Color Selection █");
@@ -34,35 +33,33 @@ public class CardEffectHandler {
                 break;
 
             case WILD_DRAW_FOUR:
-                // Bu kartı tekrar desteye koy ve yeni bir kart çek
+                // put the card back to the draw pile
                 gameMediator.drawCard(null);
                 break;
 
             case DRAW_TWO:
-                // İlk oyuncu iki kart çeker ve turunu kaçırır
+                // first player draws two cards and skips their turn
                 Player nextPlayer = players.get((dealerIndex + 1) % players.size());
-                // Önceki kontrolü atlamak için özel durum
-                // Şimdi kartı doğrudan ele ekliyoruz
                 for (int i = 0; i < 2; i++) {
                     gameMediator.drawCard(nextPlayer);
                 }
-                // İlk oyuncuyu güncelle
+                // update the current player
                 turnManager.setCurrentPlayerIndex((dealerIndex + 2) % players.size());
                 break;
 
             case REVERSE:
-                // Oyun yönünü değiştir ve kurpiye başlar
+                // reverse the game direction
                 turnManager.reverseDirection();
                 turnManager.setCurrentPlayerIndex(dealerIndex);
                 break;
 
             case SKIP:
-                // İlk oyuncuyu atla
+                // skip the first player
                 turnManager.setCurrentPlayerIndex((dealerIndex + 2) % players.size());
                 break;
 
             case SHUFFLE_HANDS:
-                // İlk oyuncu renk seçer
+                // first player chooses the color
                 Color selectedColorShuffle = players.get((dealerIndex + 1) % players.size()).chooseColor();
                 gameMediator.changeColor(selectedColorShuffle);
                 System.out.println("\n█ Initial Color Selection █");
@@ -82,22 +79,18 @@ public class CardEffectHandler {
         switch (type) {
             case DRAW_TWO:
                 Player nextPlayer = gameMediator.getPlayers().get((gameMediator.getPlayers().indexOf(player) + 1) % gameMediator.getPlayers().size());
-                // ÖNEMLİ: Sırayı değiştirmeden ÖNCE kart çekme işlemini yapalım
-                // Özel bir durum olarak "force" değerini true olarak gönderelim
+             
                 forceDrawCards(nextPlayer, 2);
-                // Şimdi sırayı değiştirelim
                 gameMediator.nextTurn();
                 break;
 
             case REVERSE:
-                // PlayerTurnManager'i direkt olarak kullanamıyoruz, bu yüzden GameMediator üzerinden çağrıyoruz
-                gameMediator.nextTurn(); // Bu metod içinde yön değiştirilmeli
+                gameMediator.nextTurn();
                 break;
 
             case SKIP:
-                // Bir sonraki oyuncuyu atlamak için iki kez nextTurn() çağrılması gerekir
-                gameMediator.nextTurn(); // Bir sonraki oyuncuya geç
-                gameMediator.nextTurn(); // Bir sonraki oyuncuyu atla - yani ikinci oyuncuya geç
+                gameMediator.nextTurn();
+                gameMediator.nextTurn();
                 break;
 
             case WILD:
@@ -116,9 +109,7 @@ public class CardEffectHandler {
                 System.out.println("» " + player.getName() + " selected " + selectedColorWild4 + " as the new color!");
                 System.out.println("» All players must now play " + selectedColorWild4 + " cards or matching card types.");
                 
-                // ÖNEMLİ: Sırayı değiştirmeden ÖNCE kart çekme işlemini yapalım
                 forceDrawCards(wildDrawFourNextPlayer, 4);
-                // Sonra sırayı değiştirelim
                 gameMediator.nextTurn();
                 break;
 
@@ -139,16 +130,13 @@ public class CardEffectHandler {
     private void shuffleHands(Player currentPlayer, List<Player> players) {
         List<Card> allCards = new ArrayList<>();
 
-        // Tüm oyuncuların kartlarını topla
         for (Player player : players) {
             allCards.addAll(player.getHand());
             player.clearHand();
         }
 
-        // Kartları karıştır
         Collections.shuffle(allCards);
 
-        // Kartları yeniden dağıt
         int cardIndex = 0;
         int currentPlayerIndex = players.indexOf(currentPlayer);
         while (cardIndex < allCards.size()) {
@@ -159,20 +147,14 @@ public class CardEffectHandler {
         }
     }
 
-    /**
-     * Özel kart etkilerinde (DRAW_TWO ve WILD_DRAW_FOUR) sırası değişmeden
-     * kart çekilmesini sağlamak için yardımcı metod
-     */
+   
     private void forceDrawCards(Player player, int count) {
         System.out.println("\n█ Special Card Effect - Force Drawing Cards █");
         System.out.println("» " + player.getName() + " must draw " + count + " cards!");
         
         for (int i = 0; i < count; i++) {
             try {
-                // GameMediator üzerinden özel bir drawCard metodu çağrısı yapabiliriz
-                // ya da direkt olarak DeckManager'a erişemediğimiz için burada özel durum yaratmalıyız
-                
-                // DeckManager'dan kart çek
+          
                 java.util.Optional<com.duocardgame.domain.model.Card> drawnCard = 
                     ((com.duocardgame.application.mediator.DuoGameMediator)gameMediator).getDrawPileCard();
                 

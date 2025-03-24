@@ -3,12 +3,9 @@ package com.duocardgame.presentation.ui;
 import com.duocardgame.domain.model.Card;
 import com.duocardgame.domain.model.Color;
 
-/**
- * Konsol çıktılarının biçimlendirilmesinden sorumlu sınıf.
- */
+
 public class ConsoleFormatter {
     
-    // ANSI Renk Kodları
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -19,12 +16,7 @@ public class ConsoleFormatter {
     public static final String ANSI_WHITE = "\u001B[37m";
     public static final String ANSI_BOLD = "\u001B[1m";
     
-    /**
-     * Kartı renkli formatta gösterir.
-     * 
-     * @param card Gösterilecek kart
-     * @return Renkli kart gösterimi
-     */
+
     public String formatCard(Card card) {
         String colorCode;
 
@@ -51,12 +43,7 @@ public class ConsoleFormatter {
         return colorCode + ANSI_BOLD + card.toString() + ANSI_RESET;
     }
     
-    /**
-     * Renkli formatta gösterir.
-     * 
-     * @param color Gösterilecek renk
-     * @return Renkli renk gösterimi
-     */
+
     public String formatColor(Color color) {
         String colorCode;
 
@@ -83,19 +70,13 @@ public class ConsoleFormatter {
         return colorCode + ANSI_BOLD + color.toString() + ANSI_RESET;
     }
     
-    /**
-     * Başlık formatında bir metin oluşturur.
-     * 
-     * @param title Başlık metni
-     * @return Biçimlendirilmiş başlık metni
-     */
+
     public String formatHeader(String title) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n").append(ANSI_CYAN).append(ANSI_BOLD);
         builder.append("╔════════════════════════════════════════════════════╗\n");
         builder.append("║             ").append(title);
         
-        // Başlık uzunluğuna göre boşluk ekle
         int spaces = 43 - title.length();
         for (int i = 0; i < spaces; i++) {
             builder.append(" ");
@@ -107,14 +88,7 @@ public class ConsoleFormatter {
         
         return builder.toString();
     }
-    
-    /**
-     * Bölüm ayıracı oluşturur.
-     * 
-     * @param title Bölüm başlığı
-     * @param color Renk (ANSI renk kodu)
-     * @return Biçimlendirilmiş bölüm ayıracı
-     */
+
     public String formatSection(String title, String color) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n").append(color).append(ANSI_BOLD);
