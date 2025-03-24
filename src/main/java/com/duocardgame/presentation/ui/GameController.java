@@ -10,7 +10,7 @@ public class GameController {
     private final GameManager gameManager;
     private final DisplayManager displayManager;
     private final UserInteractionManager interactionManager;
-    private static final int DELAY_MS = 1000; // 1 saniye bekleme süresi
+    private static final int DELAY_MS = 1; // 1 saniye bekleme süresi
     
     /**
      * Yeni bir GameController örneği oluşturur.
