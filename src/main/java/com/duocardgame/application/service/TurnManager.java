@@ -1,6 +1,6 @@
 package com.duocardgame.application.service;
 
-import com.duocardgame.domain.mediator.GameMediator;
+import com.duocardgame.application.mediator.GameMediator;
 import com.duocardgame.domain.model.Player;
 
 /**

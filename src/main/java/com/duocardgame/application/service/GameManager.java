@@ -1,7 +1,7 @@
 package com.duocardgame.application.service;
 
-import com.duocardgame.domain.mediator.GameMediator;
-import com.duocardgame.domain.mediator.DuoGameMediator;
+import com.duocardgame.application.mediator.GameMediator;
+import com.duocardgame.application.mediator.DuoGameMediator;
 import com.duocardgame.domain.model.Card;
 import com.duocardgame.domain.model.CardType;
 import com.duocardgame.domain.model.Color;

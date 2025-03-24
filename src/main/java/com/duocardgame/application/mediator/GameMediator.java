@@ -1,4 +1,4 @@
-package com.duocardgame.domain.mediator;
+package com.duocardgame.application.mediator;
 
 import com.duocardgame.domain.model.Card;
 import com.duocardgame.domain.model.Color;
