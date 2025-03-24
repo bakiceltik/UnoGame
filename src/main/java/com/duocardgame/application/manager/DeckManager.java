@@ -20,8 +20,18 @@ public class DeckManager {
     }
 
     public void resetDecks() {
-        drawPile.shuffle();
+        // Clear both draw and discard piles
+        drawPile.clear();
         discardPile.clear();
+
+        // Initialize a fresh deck with all cards
+        drawPile.initializeDeck();
+
+        // Shuffle the new deck
+        drawPile.shuffle();
+
+        System.out.println("\n█ NEW ROUND: Fresh deck has been created and shuffled! █");
+        System.out.println("» Draw pile size: " + drawPile.size());
     }
 
     public Optional<Card> drawCard() {
